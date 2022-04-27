@@ -6,17 +6,19 @@ using UnityEngine.AI;
 
 //The different states the cat can be in.  The program will check its state
 //when updating.
-public enum catState
+public enum CatState
 {
     ROAMING,
     CURIOUS,
-    DISTRESSED,
+    DISTRESS,
     DEAD
 }
 public class CatAI : MonoBehaviour
 {
+    private CatSpawner catSpawner;
+
     //Cat state is roaming by default.
-    private catState currentState = catState.ROAMING;
+    private CatState currentState = CatState.ROAMING;
 
     //The different target locations a cat might go.
     [SerializeField] private List<Transform> randomPositions = new List<Transform>();
@@ -24,28 +26,64 @@ public class CatAI : MonoBehaviour
 
     //Different time variables for the timers.
     private float decisionTime = 5f;
-    private float distressTime = 9f;
+    private float distressTime = 5f;
 
     //The cat's curiousity levels.  This will increase over time.
     private float curiosity = 10f;
 
-    private NavMeshAgent agent;
+    private const float HELP_POINTS = 81;
+    private float playerHelp = 0;
 
+    //NavMesh stuff.
+    private NavMeshAgent agent;
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
     }
 
-    private void Start()
+    public void setSpawner(CatSpawner catSpawner)
     {
-        Debug.Log("Something is working.");
-        //Call the romaing loop
-        StartCoroutine("decisionTimer");
+        this.catSpawner = catSpawner;
     }
 
-    private IEnumerator decisionTimer()
+    public void setPositions(List<Transform> randomPositions, List<Transform> goalPositions)
     {
-        while (currentState == catState.ROAMING)
+        this.randomPositions = randomPositions;
+        this.goalPositions = goalPositions;
+    }
+
+    private void Start()
+    {
+        setState(currentState);
+    }
+
+    private void setState(CatState catState)
+    {
+        StopAllCoroutines();
+        currentState = catState;
+
+        switch (currentState)
+        {
+            //If the cat is roaming, do the romaing function. Etc.
+            case CatState.ROAMING:
+                StartCoroutine("roam");
+                break;
+            case CatState.CURIOUS:
+                StartCoroutine("ApproachHazard");
+                break;
+            case CatState.DISTRESS:
+                StartCoroutine("CatInTrouble");
+                break;
+            case CatState.DEAD:
+                Debug.Log("A cat has fallen.");
+                Destroy(this.gameObject);
+                break;
+        }
+    }
+
+    private IEnumerator roam()
+    {
+        while (currentState == CatState.ROAMING)
         {
 
             //Pick a random number between the cat's current curiosity level and 100.
@@ -53,7 +91,7 @@ public class CatAI : MonoBehaviour
             //Ensures that, eventually, the cat's curiosity will overwhelm it.
             if (Random.Range(curiosity, 100) >= 95)
             {
-                currentState = catState.CURIOUS;
+                setState(CatState.CURIOUS);
             }
             //Otherwise, the cat's curiosity grows.
             else
@@ -65,9 +103,6 @@ public class CatAI : MonoBehaviour
             //Kind of like a sleep() function for the loop.  Very necessary.
             yield return new WaitForSeconds(decisionTime);
         }
-
-        //Cat selects its hazard of choice to be its doom.
-        chooseGoalTarget();
     }
 
     private void chooseRandomTarget()
@@ -81,15 +116,44 @@ public class CatAI : MonoBehaviour
         agent.destination = target.position;
     }
 
-    private void chooseGoalTarget()
+    private IEnumerator ApproachHazard()
     {
-        if (goalPositions.Count == 0) return;
-
         Debug.Log("I have chosen death. Curiosity: " + curiosity);
 
-        //Cat selects his hazard of choice and travels to it.
         //Right now, the cat can choose the same spot over a over, which is kinda lame.
         var target = goalPositions[Random.Range(0, goalPositions.Count - 1)];
         agent.destination = target.position;
+
+        while (Vector3.Distance(transform.position, target.position) > agent.stoppingDistance)
+        {
+            yield return new WaitForEndOfFrame();
+        }
+        setState(CatState.DISTRESS);
+    }
+
+    private IEnumerator CatInTrouble()
+    {
+        Debug.Log("I'm hella distressed!");
+        yield return new WaitForSeconds(distressTime);
+        setState(CatState.DEAD);
+
+    }
+
+    public void help()
+    {
+        playerHelp += 9;
+
+        if (playerHelp >= HELP_POINTS)
+        {
+            rescue();
+        }
+    }
+
+    private void rescue()
+    {
+        StopAllCoroutines();
+        catSpawner.spawnCat();
+        Destroy(this.gameObject);
+
     }
 }
