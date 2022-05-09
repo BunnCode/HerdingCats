@@ -31,7 +31,7 @@ public class CatAI : MonoBehaviour
     //The cat's curiousity levels.  This will increase over time.
     private float curiosity = 10f;
 
-    private const float HELP_POINTS = 81;
+    private const float HELP_POINTS = 27;
     private float playerHelp = 0;
 
     //NavMesh stuff.
@@ -149,8 +149,9 @@ public class CatAI : MonoBehaviour
         }
     }
 
-    private void rescue()
+    public void rescue()
     {
+        Debug.Log("Rescued!");
         StopAllCoroutines();
         catSpawner.spawnCat();
         Destroy(this.gameObject);

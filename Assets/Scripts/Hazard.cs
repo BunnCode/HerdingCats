@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Hazard : MonoBehaviour
 {
-    private int trapped;
+    public bool trapped;
     // Start is called before the first frame update
     void Start()
     {
@@ -17,12 +17,9 @@ public class Hazard : MonoBehaviour
         
     }
 
-    void freeCat(command)
+    public void freeCat()
     {
-        if (command == true)
-        {
-            trapped = false;
-            Debug.Log("The cat is free!")
-        }
+        trapped = false;
+        Debug.Log("The cat is free!");
     }
 }

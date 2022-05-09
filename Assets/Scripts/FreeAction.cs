@@ -7,9 +7,17 @@ public class FreeAction : MonoBehaviour
     public GameObject player;
     public GameObject freeTextObject;
 
-    // Hides text on screen
+    //public GameObject scoreTextObject;
+    //private int score;
+
+    public Hazard hazard;
+
+    //ScriptB MyScript;
+
     void Start()
     {
+        //score = 0;
+        //SetScoreText();
         freeTextObject.SetActive(false);
     }
 
@@ -20,8 +28,13 @@ public class FreeAction : MonoBehaviour
         {
             //Debug.Log("I can free the Cat!");
             freeTextObject.SetActive(true);
-
-            // player can now use Free action
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                if(hazard.trapped == true)
+                {
+                    hazard.freeCat();
+                }
+            }
         }
     }
 
@@ -33,4 +46,11 @@ public class FreeAction : MonoBehaviour
             freeTextObject.SetActive(false);
         }
     }
+
+    /*
+    void SetScoreText()
+    {
+        scoreText.text = "Score: " + score.ToString();
+    }
+    */
 }
