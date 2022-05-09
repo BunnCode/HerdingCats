@@ -1276,7 +1276,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 1549264157}
   freeTextObject: {fileID: 736692276}
-  hazard: {fileID: 521912465}
+  hazard: {fileID: 8178771078734243841}
 --- !u!65 &1661281390
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1518,6 +1518,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e79d3e71c6b3a54081159e20104f7fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  trapped: 0
 --- !u!1001 &9160267057865506488
 PrefabInstance:
   m_ObjectHideFlags: 0
