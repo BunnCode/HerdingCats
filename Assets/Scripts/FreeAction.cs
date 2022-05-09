@@ -1,24 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class FreeAction : MonoBehaviour
 {
     public GameObject player;
-    public GameObject freeTextObject;
-
-    //public GameObject scoreTextObject;
-    //private int score;
+    public TextMeshProUGUI scoreText;
+    private int score;
+    public GameObject canFreeText;
 
     public Hazard hazard;
 
-    //ScriptB MyScript;
-
     void Start()
     {
-        //score = 0;
-        //SetScoreText();
-        freeTextObject.SetActive(false);
+        score = 0;
+        canFreeText.SetActive(false);
+
+        SetScoreText();
     }
 
     // While player is near Hazard, they can perform actions and text appears on screen
@@ -27,12 +26,16 @@ public class FreeAction : MonoBehaviour
         if (other.gameObject == player)
         {
             //Debug.Log("I can free the Cat!");
-            freeTextObject.SetActive(true);
+            canFreeText.SetActive(true);
             if (Input.GetKeyDown(KeyCode.F))
             {
-                if(hazard.trapped == true)
+                score += 9;
+                SetScoreText();
+                if (hazard.trapped == true)
                 {
                     hazard.freeCat();
+                    //score += 9;
+                    //SetScoreText();
                 }
             }
         }
@@ -43,14 +46,12 @@ public class FreeAction : MonoBehaviour
     {
         if (other.gameObject == player)
         {
-            freeTextObject.SetActive(false);
+            canFreeText.SetActive(false);
         }
     }
 
-    /*
     void SetScoreText()
     {
         scoreText.text = "Score: " + score.ToString();
     }
-    */
 }
