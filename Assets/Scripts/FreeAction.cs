@@ -26,16 +26,14 @@ public class FreeAction : MonoBehaviour
         if (other.gameObject == player)
         {
             //Debug.Log("I can free the Cat!");
-            canFreeText.SetActive(true);
-            if (Input.GetKeyDown(KeyCode.F))
+            if (hazard.trapped == true)
             {
-                score += 9;
-                SetScoreText();
-                if (hazard.trapped == true)
+                canFreeText.SetActive(true);
+                if (Input.GetKeyDown(KeyCode.F))
                 {
                     hazard.freeCat();
-                    //score += 9;
-                    //SetScoreText();
+                    score += 9;
+                    SetScoreText();
                 }
             }
         }

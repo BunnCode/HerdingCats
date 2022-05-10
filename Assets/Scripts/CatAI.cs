@@ -24,6 +24,9 @@ public class CatAI : MonoBehaviour
     [SerializeField] private List<Transform> randomPositions = new List<Transform>();
     [SerializeField] private List<Transform> goalPositions = new List<Transform>();
 
+    //The hazard.  We'll change this to a list once we add more of them.
+    [SerializeField] private Hazard hazard;
+
     //Different time variables for the timers.
     private float decisionTime = 5f;
     private float distressTime = 5f;
@@ -36,6 +39,7 @@ public class CatAI : MonoBehaviour
 
     //NavMesh stuff.
     private NavMeshAgent agent;
+
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -46,10 +50,11 @@ public class CatAI : MonoBehaviour
         this.catSpawner = catSpawner;
     }
 
-    public void setPositions(List<Transform> randomPositions, List<Transform> goalPositions)
+    public void setPositions(List<Transform> randomPositions, List<Transform> goalPositions, Hazard hazard)
     {
         this.randomPositions = randomPositions;
         this.goalPositions = goalPositions;
+        this.hazard = hazard;
     }
 
     private void Start()
@@ -57,7 +62,7 @@ public class CatAI : MonoBehaviour
         setState(currentState);
     }
 
-    private void setState(CatState catState)
+    public void setState(CatState catState)
     {
         StopAllCoroutines();
         currentState = catState;
@@ -76,6 +81,7 @@ public class CatAI : MonoBehaviour
                 break;
             case CatState.DEAD:
                 Debug.Log("A cat has fallen.");
+                hazard.occupied = false;
                 Destroy(this.gameObject);
                 break;
         }
@@ -91,7 +97,15 @@ public class CatAI : MonoBehaviour
             //Ensures that, eventually, the cat's curiosity will overwhelm it.
             if (Random.Range(curiosity, 100) >= 95)
             {
-                setState(CatState.CURIOUS);
+                if (hazard.occupied == true)
+                {
+                    chooseRandomTarget();
+                }
+                else
+                {
+                    hazard.occupied = true;
+                    setState(CatState.CURIOUS);
+                }
             }
             //Otherwise, the cat's curiosity grows.
             else
@@ -112,6 +126,7 @@ public class CatAI : MonoBehaviour
         Debug.Log("choosing a random position. Curiosity: " + curiosity);
 
         //Just picks a random point on the mesh to walk to.
+        //Right now, the cat can choose the same spot over and over, which is kinda lame.
         var target = randomPositions[Random.Range(0, randomPositions.Count - 1)];
         agent.destination = target.position;
     }
@@ -120,15 +135,16 @@ public class CatAI : MonoBehaviour
     {
         Debug.Log("I have chosen death. Curiosity: " + curiosity);
 
-        //Right now, the cat can choose the same spot over a over, which is kinda lame.
+
         var target = goalPositions[Random.Range(0, goalPositions.Count - 1)];
+
         agent.destination = target.position;
 
         while (Vector3.Distance(transform.position, target.position) > agent.stoppingDistance)
         {
             yield return new WaitForEndOfFrame();
         }
-        setState(CatState.DISTRESS);
+        //setState(CatState.DISTRESS);
     }
 
     private IEnumerator CatInTrouble()
@@ -153,6 +169,7 @@ public class CatAI : MonoBehaviour
     {
         Debug.Log("Rescued!");
         StopAllCoroutines();
+        hazard.occupied = false;
         catSpawner.spawnCat();
         Destroy(this.gameObject);
 

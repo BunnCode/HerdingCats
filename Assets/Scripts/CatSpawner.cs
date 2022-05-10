@@ -6,6 +6,7 @@ public class CatSpawner : MonoBehaviour
 {
     public List<Transform> randomPositions;
     public List<Transform> goalPositions;
+    public Hazard hazard;
 
     private const float SPAWN_RATE = 30;
 
@@ -15,7 +16,7 @@ public class CatSpawner : MonoBehaviour
     {
         CatAI catAI = Instantiate(catPrefab, transform.position, Quaternion.identity);
         catAI.setSpawner(this);
-        catAI.setPositions(randomPositions, goalPositions);
+        catAI.setPositions(randomPositions, goalPositions, hazard);
     }
 
     private void Start()
