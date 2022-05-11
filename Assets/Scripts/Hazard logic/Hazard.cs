@@ -54,7 +54,8 @@ public class Hazard : MonoBehaviour {
     // passes it the cat.
     private void OnTriggerEnter(Collider col) {
         var cat = col.GetComponent<CatAI>();
-        if (cat) {
+        //Only trigger if we have a cat that's actively going for this hazard
+        if (cat && cat.goalHazard == this) {
             TrappedCat = cat;
             StartCoroutine(TrapCat(cat));
         }
