@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/HerdingCats/Scenes/PlayableLevels/Yard Level/Yard.unity
+    guid: c655b06d42e752947af660805ae5fae4
   m_configObjects: {}

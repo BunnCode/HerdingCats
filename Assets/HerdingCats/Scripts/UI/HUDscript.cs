@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+using Unity.VisualScripting;
 
 public class HUDscript : MonoBehaviour {
     private static HUDscript _instance;
@@ -36,6 +37,7 @@ public class HUDscript : MonoBehaviour {
     /// <summary>
     /// Counter for score
     /// </summary>
+    [DoNotSerialize]
     public int score;
 
     /// <summary>
@@ -79,7 +81,7 @@ public class HUDscript : MonoBehaviour {
         //this could be better. would call UpdateLivesText() after a cat dies but not sure how to call inside the CatAI script
         UpdateLivesText();
         UpdateFreeMeterText();
-
+        UpdateScoreText();
         if (lives == 0) {
             gameOverText.SetActive(true);
             playAgainButton.SetActive(true);

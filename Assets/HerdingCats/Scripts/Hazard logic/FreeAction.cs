@@ -18,7 +18,6 @@ public class FreeAction : MonoBehaviour {
 
     void Start() {
         HUDscript.Instance.HideFreeDialog();
-        SetScoreText();
     }
 
     private void Update() {
@@ -32,7 +31,7 @@ public class FreeAction : MonoBehaviour {
                     Debug.Log("F pressed!");
                     hazard.freeCat();
                     HUDscript.Instance.freeMeter = 0;
-                    SetScoreText();
+                    IncreaseScore();
                 }
             }
         }
@@ -60,7 +59,7 @@ public class FreeAction : MonoBehaviour {
         }
     }
 
-    void SetScoreText() {
+    void IncreaseScore() {
         //todo: This needs to be a different method instead of being directly controlled
         HUDscript.Instance.score += 9;
     }
