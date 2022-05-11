@@ -53,6 +53,15 @@ public class FreeAction : MonoBehaviour
         }
     }
 
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject == player)
+        {
+            freeTime = false;
+            canFreeText.SetActive(false);
+        }
+    }
+
     void SetScoreText()
     {
         scoreText.text = "Score: " + score.ToString();
