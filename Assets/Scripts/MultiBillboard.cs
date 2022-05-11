@@ -7,7 +7,8 @@ using UnityEngine;
 public class MultiBillboard : MonoBehaviour {
     public Texture2D[] Textures;
     public Texture2D[] TexturesFrame2;
-    public Texture2D GeneratedTexture;
+    //This being static is a temporary hotfix for the alpha build and will be rectified
+    public static Texture2D GeneratedTexture;
 
     private Material _material;
     private Renderer _renderer;
@@ -20,7 +21,8 @@ public class MultiBillboard : MonoBehaviour {
         _block = new MaterialPropertyBlock();
         int textureWidth = Textures[0].width;
         int textureHeight = Textures[0].height;
-        GeneratedTexture = new Texture2D(textureWidth * Textures.Length, textureHeight * 2);
+        if(!GeneratedTexture)
+            GeneratedTexture = new Texture2D(textureWidth * Textures.Length, textureHeight * 2);
         
         for (int i = 0; i < Textures.Length; i++) {
             //Frame 1
