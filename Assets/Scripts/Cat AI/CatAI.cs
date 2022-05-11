@@ -6,19 +6,35 @@ using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
 
-//The different states the cat can be in.  The program will check its state
-//when updating.
-public enum CatState
-{
+/// <summary>
+/// The different states the cat can be in.  The program will check its state when updating.
+/// </summary>
+public enum CatState {
     ROAMING,
     CURIOUS,
     DISTRESS,
     DEAD
 }
+
+/// <summary>
+/// MonoBehavior controlling cat behavior
+/// </summary>
 public class CatAI : MonoBehaviour {
+    /// <summary>
+    /// Level of interest at which to trigger a cat approaching a hazard
+    /// </summary>
     private static int INTEREST_TRIGGER = 30;
+
+    //used for calculating bounds of curiosity, a stat that controls when a cat will enter danger
     private static int CURIOSITY_MIN = 0;
     private static int CURIOSITY_MAX = 100;
+
+    //How often to meow when approaching danger
+    private static float CURIOSITY_MEOW_MIN_TIME = 2;
+    private static float CURIOSITY_MEOW_MAX_TIME = 5;
+
+    //Time between meows while in distress
+    private static float DISTRESSED_MEOW_TIME = 1;
 
     /// <summary>
     /// Random cat sound effects
@@ -31,12 +47,22 @@ public class CatAI : MonoBehaviour {
     public CatDeathController DeathPrefab;
 
     /// <summary>
+    /// The initial color for this cat (defaults to white)
+    /// </summary>
+    public Color initialColor = Color.white;
+
+    /// <summary>
+    /// The distress color for this cat (Defaults to red)
+    /// </summary>
+    public Color distressColor = Color.red;
+
+    /// <summary>
     /// The spawner for the cat prefabs.
     /// </summary>
     private CatSpawner catSpawner;
 
     /// <summary>
-    /// Cat state is roaming by default.
+    /// TrappedCat state is roaming by default.
     /// </summary>
     private CatState currentState = CatState.ROAMING;
 
@@ -48,7 +74,7 @@ public class CatAI : MonoBehaviour {
     /// <summary>
     /// All hazards in the level
     /// </summary>
-    private List<Hazard> hazards = new List<Hazard>();
+    private List<Hazard> hazards = new();
 
     /// <summary>
     /// Current target hazard
@@ -71,13 +97,18 @@ public class CatAI : MonoBehaviour {
     private float curiosity = 10f;
 
     /// <summary>
-    /// Navmesh this cat is currently using
+    /// Navmesh agent this cat is currently using
     /// </summary>
-    private NavMeshAgent agent;
+    public NavMeshAgent agent;
 
-    
-    private void Awake()
-    {
+    /// <summary>
+    /// Scalar indicating how close this cat is to death, 0 = healthy, 1 = dead.
+    /// </summary>
+    private float _distressLevel = 0;
+
+    private MultiBillboard _billboardController;
+
+    private void Awake() {
         //Generate NavMesh.
         agent = GetComponent<NavMeshAgent>();
     }
@@ -86,8 +117,7 @@ public class CatAI : MonoBehaviour {
     /// Set the spawner associated with this cat
     /// </summary>
     /// <param name="catSpawner"></param>
-    public void setSpawner(CatSpawner catSpawner)
-    {
+    public void setSpawner(CatSpawner catSpawner) {
         this.catSpawner = catSpawner;
     }
 
@@ -96,8 +126,7 @@ public class CatAI : MonoBehaviour {
     /// </summary>
     /// <param name="randomPositions">Safe positions to wander to</param>
     /// <param name="hazards">List of hazards</param>
-    public void setPositions(List<Transform> randomPositions, List<Hazard> hazards)
-    {
+    public void setPositions(List<Transform> randomPositions, List<Hazard> hazards) {
         this.randomPositions = randomPositions;
         this.hazards = hazards;
     }
@@ -105,24 +134,54 @@ public class CatAI : MonoBehaviour {
     /// <summary>
     /// Set default state.  Once this calls, the AI loop begins!
     /// </summary>
-    private void Start()
-    {
+    private void Start() {
         setState(currentState);
+        _billboardController = GetComponentInChildren<MultiBillboard>();
+    }
+
+    private void Update() {
+        //Set the color of the cat based on distress level
+        _billboardController.block.SetColor(
+            "_Color", Color.Lerp(initialColor, distressColor, _distressLevel)
+            );
+    }
+
+    /// <summary>
+    /// Triggered when a cat dies
+    /// </summary>
+    private void Die() {
+        StopAllCoroutines();
+        //Instantiate death effects
+        Instantiate(DeathPrefab, transform.position, Quaternion.identity);
+        //If the cat dies, de-occupy the hazard and destroy the cat prefab.
+        Debug.Log("A cat has fallen.");
+        goalHazard.occupied = false;
+        goalHazard.trapped = false;
+        Destroy(this.gameObject);
+        HUDscript.Instance.lives -= 1;
+        HUDscript.Instance.freeMeter = 0;
+    }
+    /// <summary>
+    /// Trigger a random meow sound
+    /// </summary>
+    private void Meow() {
+        var source = GetComponent<AudioSource>();
+        source.clip = Meows[Random.Range(0, Meows.Count)];
+        source.Play();
     }
 
     /// <summary>
     /// This switch statement is called whenever states change around.  Very handy.
     /// </summary>
     /// <param name="catState"></param>
-    public void setState(CatState catState)
-    {
+    public void setState(CatState catState) {
+       
         //Cancel previous coroutines generated by previous state, and assign new state.
         StopAllCoroutines();
         currentState = catState;
 
-        switch (currentState)
-        {
-            //If the cat is roaming, do the romaing function. Etc.
+        //Trigger appropriate behavior
+        switch (currentState) {
             case CatState.ROAMING:
                 StartCoroutine(roam());
                 break;
@@ -133,21 +192,15 @@ public class CatAI : MonoBehaviour {
                 StartCoroutine(CatInTrouble());
                 break;
             case CatState.DEAD:
-                //If the cat dies, de-occupy the hazard and destroy the cat prefab.
-                Debug.Log("A cat has fallen.");
-                goalHazard.occupied = false;
-                goalHazard.trapped = false;
-                Destroy(this.gameObject);
-                HUDscript.Instance.lives -= 1;
-                HUDscript.Instance.freeMeter = 0;
+                Die();
                 break;
         }
     }
-    
+
     /// <summary>
     /// Return a currently-available hazard. Returns null if none are free.
     /// </summary>
-    /// <returns>A free hazard.</returns>
+    /// <returns>A free </returns>
     private Hazard GetFreeHazard() {
         //Counter to prevent deadlock
         var iter = 0;
@@ -161,15 +214,14 @@ public class CatAI : MonoBehaviour {
                 return checkedHazard;
             iter++;
         }
+
         Debug.LogWarning("Tried to find an open trap... but couldn't.");
         return null;
     }
 
     //Roaming Script.
-    private IEnumerator roam()
-    {
-        while (currentState == CatState.ROAMING)
-        {
+    private IEnumerator roam() {
+        while (currentState == CatState.ROAMING) {
             //Pick a random number between the cat's current curiosity level and 100.
             //If the number is above the threshold, the cat enters its curious state.
             //Ensures that, eventually, the cat's curiosity will overwhelm it.
@@ -186,68 +238,83 @@ public class CatAI : MonoBehaviour {
                 }
             }
             //Otherwise, the cat's curiosity grows.
-            else
-            {
+            else {
                 chooseRandomTarget();
                 curiosity = Mathf.Clamp(curiosity + 10, CURIOSITY_MIN, CURIOSITY_MAX);
             }
 
-            //Kind of like a sleep() function for the loop.  Very necessary.
+            //Make a new decision in N seconds
             yield return new WaitForSeconds(decisionTime);
         }
     }
 
     //Utility function to make the cat walk to a "random" postion.
-    private void chooseRandomTarget()
-    {
+    private void chooseRandomTarget() {
         if (randomPositions.Count == 0) return;
 
         Debug.Log("choosing a random position. Curiosity: " + curiosity);
-
-        //Just picks a pseudo-random point on the mesh to walk to.
-        //Right now, the cat can choose the same spot over and over, which is kinda lame.
-        var target = randomPositions[Random.Range(0, randomPositions.Count - 1)];
+        var target = randomPositions[Random.Range(0, randomPositions.Count)];
         agent.destination = target.position;
     }
 
     //Utility function to make the cat walk to a hazard.
-    private IEnumerator ApproachHazard()
-    {
+    private IEnumerator ApproachHazard() {
         Debug.Log("I have chosen death. Curiosity: " + curiosity);
-
+        //Claim the hazard
+        goalHazard.occupied = true;
         //Targets a random hazard to go "investigate."
         agent.destination = goalHazard.transform.position;
 
-        while (Vector3.Distance(transform.position, goalHazard.transform.position) > agent.stoppingDistance)
-        {
-            //Waits for the cat to get to where its going.
-            //Was necessary when the cat's state changed to distress inside here, and now
-            // I'm too afraid to change it.
-            yield return new WaitForEndOfFrame();
+        while (
+            currentState == CatState.CURIOUS ||
+            Vector3.Distance(transform.position, goalHazard.transform.position) > agent.stoppingDistance
+        ) {
+            //Meow randomly while approaching danger
+            yield return new WaitForSeconds(Random.Range(CURIOSITY_MEOW_MIN_TIME, CURIOSITY_MEOW_MAX_TIME));
+            Meow();
         }
         //setState(CatState.DISTRESS);
     }
 
+   
     //Utility function that waits for nine seconds, then changes the cat's
     // state to DEAD
-    private IEnumerator CatInTrouble()
-    {
-        Debug.Log("I'm hella distressed!");
-        yield return new WaitForSeconds(distressTime);
-        setState(CatState.DEAD);
+    private IEnumerator CatInTrouble() {
+        //Coroutine for triggering ~meows of distress~
+        IEnumerator MeowTrouble() {
+            while (currentState == CatState.DISTRESS) {
+                yield return new WaitForSeconds(DISTRESSED_MEOW_TIME);
+                Meow();
+            }
+        }
 
+        //Rev up those meowers
+        StartCoroutine(MeowTrouble());
+        Debug.Log("I'm hella distressed!");
+        var startTime = Time.time;
+
+        //Increase distress level
+        while (Time.time - startTime < distressTime) {
+            var scalar = (Time.time - startTime) / distressTime;
+            _distressLevel = scalar;
+            yield return new WaitForEndOfFrame();
+        }
+
+        setState(CatState.DEAD);
     }
 
-
-    //This function is nearly identical to the cat dying, but respawns a new
-    // cat at the spawn point that represents the rescued cat.
-    public void rescue()
-    {
+    /// <summary>
+    /// Free the cat
+    /// </summary>
+    public void rescue() {
+        _distressLevel = 0;
         Debug.Log("Rescued!");
         StopAllCoroutines();
         goalHazard.occupied = false;
         goalHazard = null;
+        //todo: Deprecated, delete
+        /*
         catSpawner.spawnCat();
-        Destroy(this.gameObject);
+        Destroy(this.gameObject);*/
     }
 }

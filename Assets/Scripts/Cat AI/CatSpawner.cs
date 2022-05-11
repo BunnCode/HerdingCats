@@ -13,7 +13,7 @@ public class CatSpawner : MonoBehaviour
     //The spawn rate.
     private const float SPAWN_RATE = 30;
 
-    //The Cat prefab.
+    //The TrappedCat prefab.
     public CatAI catPrefab;
 
     //Instantiates the cat prefab, and gives it the objects it will interact with.

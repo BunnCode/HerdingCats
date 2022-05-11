@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
 // ReSharper disable FieldCanBeMadeReadOnly.Local
 
 /// <summary>
@@ -17,15 +18,15 @@ public class CatDeathController : MonoBehaviour {
     /// <param name="seconds">Number of seconds to wait</param>
     /// <returns></returns>
     IEnumerator DestroyAfterSeconds(float seconds) {
+       
         yield return new WaitForSeconds(seconds);
         Destroy(this);
     }
-    
+
     /// <summary>
     /// Play effects and initiate death trigger
     /// </summary>
-    void Start()
-    {
+    void Start() {
         _deathParticles.Play();
         _deathAudioSource.Play();
         StartCoroutine(DestroyAfterSeconds(_secondsAlive));

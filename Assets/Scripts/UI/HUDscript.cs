@@ -5,8 +5,8 @@ using UnityEngine.SceneManagement;
 using TMPro;
 
 public class HUDscript : MonoBehaviour {
-
     private static HUDscript _instance;
+
     /// <summary>
     /// Singleton accessor
     /// </summary>
@@ -15,7 +15,7 @@ public class HUDscript : MonoBehaviour {
         {
             if (!_instance) {
                 _instance = GameObject.FindObjectOfType<HUDscript>();
-                if(!_instance)
+                if (!_instance)
                     Debug.LogError("No HUDScript found in scene!");
             }
 
@@ -32,6 +32,11 @@ public class HUDscript : MonoBehaviour {
     /// Counter for lives
     /// </summary>
     public int lives;
+
+    /// <summary>
+    /// Counter for score
+    /// </summary>
+    public int score;
 
     /// <summary>
     /// Text element that displays how many "Free" action presses are required to free the cat
@@ -58,8 +63,7 @@ public class HUDscript : MonoBehaviour {
 
 
     // Start is called before the first frame update
-    void Start()
-    {
+    void Start() {
         //freeMeterText.alpha = 0.0F;
         Time.timeScale = 1;
         lives = 3;
@@ -71,14 +75,12 @@ public class HUDscript : MonoBehaviour {
     }
 
     // Update is called once per frame
-    void Update()
-    {
+    void Update() {
         //this could be better. would call UpdateLivesText() after a cat dies but not sure how to call inside the CatAI script
         UpdateLivesText();
         UpdateFreeMeterText();
 
-        if (lives == 0)
-        {
+        if (lives == 0) {
             gameOverText.SetActive(true);
             playAgainButton.SetActive(true);
             Time.timeScale = 0;
@@ -90,8 +92,7 @@ public class HUDscript : MonoBehaviour {
     /// <summary>
     /// Update the Lives UI element
     /// </summary>
-    public void UpdateLivesText()
-    {
+    public void UpdateLivesText() {
         livesText.text = "Lives: " + lives.ToString();
     }
 
@@ -106,24 +107,29 @@ public class HUDscript : MonoBehaviour {
     /// <summary>
     /// Hide UI elements related to freeing the cat
     /// </summary>
-    public void HideFreeDialog()
-    {
+    public void HideFreeDialog() {
         freePromptText.gameObject.SetActive(false);
         freeMeterText.gameObject.SetActive(false);
     }
+
     /// <summary>
     /// Update the free meter
     /// </summary>
-    public void UpdateFreeMeterText()
-    {
+    public void UpdateFreeMeterText() {
         freeMeterText.text = freeMeter.ToString() + "/3";
+    }
+
+    /// <summary>
+    /// Update the score text
+    /// </summary>
+    private void UpdateScoreText() {
+        scoreText.text = "Score: " + score.ToString();
     }
 
     /// <summary>
     /// Reload the level
     /// </summary>
-    public void ReloadLevel()
-    {
+    public void ReloadLevel() {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

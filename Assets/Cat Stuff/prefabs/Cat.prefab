@@ -220,9 +220,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89f4c875aef6e134b95d35a8067579b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  randomPositions: []
-  hazards: []
+  Meows:
+  - {fileID: 8300000, guid: 47bf703a1f380fa46bc7643dcd52e741, type: 3}
+  - {fileID: 8300000, guid: 3640b3a9f71986e4f98db7cfe33ac300, type: 3}
+  - {fileID: 8300000, guid: 622351a46f62967469b3bdaaafef902a, type: 3}
+  - {fileID: 8300000, guid: 3be5b7a5b82acb94991d184c9d43387d, type: 3}
+  DeathPrefab: {fileID: 6749331612553060230, guid: ec9282752b4299c4490282a77ede9e58, type: 3}
+  initialColor: {r: 1, g: 1, b: 1, a: 1}
+  distressColor: {r: 1, g: 0, b: 0, a: 1}
   goalHazard: {fileID: 0}
+  agent: {fileID: 0}
 --- !u!195 &4555551234344678062
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -317,7 +324,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
