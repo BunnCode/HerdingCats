@@ -10,7 +10,7 @@ public class FreeAction : MonoBehaviour
     private int score;
     public GameObject canFreeText;
 
-    bool freeTime = false;
+    public static bool freeTime = false;
     public Hazard hazard;
 
     void Start()
@@ -27,9 +27,14 @@ public class FreeAction : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.F))
             {
-                hazard.freeCat();
-                score += 9;
-                SetScoreText();
+                HUDscript.freeMeter += 1;
+                if (HUDscript.freeMeter >= 3)
+                {
+                    hazard.freeCat();
+                    score += 9;
+                    HUDscript.freeMeter = 0;
+                    SetScoreText();
+                }
             }
         }
     }

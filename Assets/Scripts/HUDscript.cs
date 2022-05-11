@@ -9,6 +9,9 @@ public class HUDscript : MonoBehaviour
     public TextMeshProUGUI livesText;
     public static int lives;
 
+    public TextMeshProUGUI freeMeterText;
+    public static int freeMeter;
+
     public GameObject gameOverText;
     public GameObject playAgainButton;
 
@@ -16,9 +19,12 @@ public class HUDscript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        freeMeterText.alpha = 0.0F;
         Time.timeScale = 1;
         lives = 1;
+        freeMeter = 0;
         SetLivesText();
+        SetFreeMeterText();
         gameOverText.SetActive(false);
         playAgainButton.SetActive(false);
     }
@@ -28,6 +34,16 @@ public class HUDscript : MonoBehaviour
     {
         //this could be better. would call SetLivesText() after a cat dies but not sure how to call inside the CatAI script
         SetLivesText();
+        if (FreeAction.freeTime == true)
+        {
+            freeMeterText.alpha = 1.0F;
+        }
+        else
+        {
+            freeMeterText.alpha = 0.0F;
+        }
+        SetFreeMeterText();
+
         if (lives == 0)
         {
             gameOverText.SetActive(true);
@@ -41,6 +57,11 @@ public class HUDscript : MonoBehaviour
     public void SetLivesText()
     {
         livesText.text = "Lives: " + lives.ToString();
+    }
+
+    public void SetFreeMeterText()
+    {
+        freeMeterText.text = freeMeter.ToString() + "/3";
     }
 
     public void PlayAgain()
