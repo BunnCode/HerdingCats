@@ -57,4 +57,11 @@ public class FreeAction : MonoBehaviour
     {
         scoreText.text = "Score: " + score.ToString();
     }
+
+    /*
+    void SetLivesText()
+    {
+        livesText.text = "Lives: " + lives.ToString();
+    }
+    */
 }

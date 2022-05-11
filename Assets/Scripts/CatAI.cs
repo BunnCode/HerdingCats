@@ -68,6 +68,11 @@ public class CatAI : MonoBehaviour
         setState(currentState);
     }
 
+    private void Update()
+    {
+        
+    }
+
     //This switch statement is called whenever states change around.  Very handy.
     public void setState(CatState catState)
     {
