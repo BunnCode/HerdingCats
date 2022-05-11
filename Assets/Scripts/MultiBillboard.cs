@@ -21,27 +21,31 @@ public class MultiBillboard : MonoBehaviour {
         _block = new MaterialPropertyBlock();
         int textureWidth = Textures[0].width;
         int textureHeight = Textures[0].height;
-        if(!GeneratedTexture)
+        //Only generate texture once
+        if (!GeneratedTexture) {
             GeneratedTexture = new Texture2D(textureWidth * Textures.Length, textureHeight * 2);
-        
-        for (int i = 0; i < Textures.Length; i++) {
-            //Frame 1
-            GeneratedTexture.SetPixels(
-                (i * textureWidth),
-                0,
-                Textures[i].width, 
-                Textures[i].height, 
-                Textures[i].GetPixels());
-            //Frame 2
-            GeneratedTexture.SetPixels(
-                (i * textureWidth),
-                Textures[i].height,
-                TexturesFrame2[i].width,
-                TexturesFrame2[i].height,
-                TexturesFrame2[i].GetPixels());
+
+            for (int i = 0; i < Textures.Length; i++) {
+                //Frame 1
+                GeneratedTexture.SetPixels(
+                    (i * textureWidth),
+                    0,
+                    Textures[i].width,
+                    Textures[i].height,
+                    Textures[i].GetPixels());
+                //Frame 2
+                GeneratedTexture.SetPixels(
+                    (i * textureWidth),
+                    Textures[i].height,
+                    TexturesFrame2[i].width,
+                    TexturesFrame2[i].height,
+                    TexturesFrame2[i].GetPixels());
+            }
+#if UNITY_EDITOR
+            GeneratedTexture.alphaIsTransparency = true;
+#endif
+            GeneratedTexture.Apply();
         }
-        GeneratedTexture.alphaIsTransparency = true;
-        GeneratedTexture.Apply();
     }
 
     // Update is called once per frame
