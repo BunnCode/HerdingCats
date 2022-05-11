@@ -24,7 +24,7 @@ public class CatAI : MonoBehaviour {
     /// <summary>
     /// Level of interest at which to trigger a cat approaching a hazard
     /// </summary>
-    private static int INTEREST_TRIGGER = 30;
+    private static int INTEREST_TRIGGER = 95;
 
     //used for calculating bounds of curiosity, a stat that controls when a cat will enter danger
     private static int CURIOSITY_MIN = 0;
@@ -91,7 +91,7 @@ public class CatAI : MonoBehaviour {
     /// <summary>
     /// Time between making decisions
     /// </summary>
-    private float decisionTime = 5f;
+    private float decisionTime = 15f;
 
     /// <summary>
     /// Time to stay alive after triggering trap
@@ -321,6 +321,7 @@ public class CatAI : MonoBehaviour {
     /// </summary>
     public void rescue() {
         _distressLevel = 0;
+        curiosity = 0;
         Debug.Log("Rescued!");
         StopAllCoroutines();
         goalHazard.occupied = false;

@@ -27,6 +27,10 @@ public class CatSpawner : MonoBehaviour
     //Calls the spawning loop at startup.
     private void Start()
     {
+        //Spawn N initial cats
+        for (int i = 0; i < InitialCatsToSpawn; i++) {
+            spawnCat();
+        }
         StartCoroutine("spawnTimer");
     }
 
@@ -37,8 +41,8 @@ public class CatSpawner : MonoBehaviour
     {
         while (true)
         {
-            spawnCat();
             yield return new WaitForSeconds(SPAWN_RATE);
+            spawnCat();
         }
     }
 }
