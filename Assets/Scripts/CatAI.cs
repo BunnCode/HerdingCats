@@ -96,7 +96,9 @@ public class CatAI : MonoBehaviour
                 //If the cat dies, de-occupy the hazard and destroy the cat prefab.
                 Debug.Log("A cat has fallen.");
                 hazard.occupied = false;
+                hazard.trapped = false;
                 Destroy(this.gameObject);
+                HUDscript.lives -= 1;
                 break;
         }
     }
