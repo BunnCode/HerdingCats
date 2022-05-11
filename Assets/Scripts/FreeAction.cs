@@ -30,6 +30,7 @@ public class FreeAction : MonoBehaviour
                 HUDscript.freeMeter += 1;
                 if (HUDscript.freeMeter >= 3)
                 {
+                    Debug.Log("F pressed!");
                     hazard.freeCat();
                     score += 9;
                     HUDscript.freeMeter = 0;

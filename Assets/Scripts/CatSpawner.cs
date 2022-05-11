@@ -4,9 +4,10 @@ using UnityEngine;
 
 public class CatSpawner : MonoBehaviour
 {
+    public int InitialCatsToSpawn = 3;
     //Creates all the objects the cat will interact with.
     public List<Transform> randomPositions;
-    public List<Transform> goalPositions;
+    public List<Hazard> hazards;
     public Hazard hazard;
 
     //The spawn rate.
@@ -20,7 +21,7 @@ public class CatSpawner : MonoBehaviour
     {
         CatAI catAI = Instantiate(catPrefab, transform.position, Quaternion.identity);
         catAI.setSpawner(this);
-        catAI.setPositions(randomPositions, goalPositions, hazard);
+        catAI.setPositions(randomPositions, hazards);
     }
 
     //Calls the spawning loop at startup.

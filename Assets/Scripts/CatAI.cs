@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 
 //The different states the cat can be in.  The program will check its state
@@ -13,8 +15,11 @@ public enum CatState
     DISTRESS,
     DEAD
 }
-public class CatAI : MonoBehaviour
-{
+public class CatAI : MonoBehaviour {
+    private static int INTEREST_TRIGGER = 30;
+    private static int CURIOSITY_MIN = 0;
+    private static int CURIOSITY_MAX = 100;
+
     //The spawner for the cat prefabs.
     private CatSpawner catSpawner;
 
@@ -23,10 +28,9 @@ public class CatAI : MonoBehaviour
 
     //The different target locations a cat might go.
     [SerializeField] private List<Transform> randomPositions = new List<Transform>();
-    [SerializeField] private List<Transform> goalPositions = new List<Transform>();
+    [SerializeField] private List<Hazard> hazards = new List<Hazard>();
 
-    //The hazard.  We'll change this to a list once we add more of them.
-    [SerializeField] private Hazard hazard;
+    public Hazard goalHazard;
 
     //Different time variables for the timers.
     private float decisionTime = 5f;
@@ -55,11 +59,10 @@ public class CatAI : MonoBehaviour
     }
 
     //Set the objects the cat interacts with.
-    public void setPositions(List<Transform> randomPositions, List<Transform> goalPositions, Hazard hazard)
+    public void setPositions(List<Transform> randomPositions, List<Hazard> hazards)
     {
         this.randomPositions = randomPositions;
-        this.goalPositions = goalPositions;
-        this.hazard = hazard;
+        this.hazards = hazards;
     }
 
     //Set default state.  Once this calls, the AI loop begins!
@@ -84,23 +87,43 @@ public class CatAI : MonoBehaviour
         {
             //If the cat is roaming, do the romaing function. Etc.
             case CatState.ROAMING:
-                StartCoroutine("roam");
+                StartCoroutine(roam());
                 break;
             case CatState.CURIOUS:
-                StartCoroutine("ApproachHazard");
+                StartCoroutine(ApproachHazard());
                 break;
             case CatState.DISTRESS:
-                StartCoroutine("CatInTrouble");
+                StartCoroutine(CatInTrouble());
                 break;
             case CatState.DEAD:
                 //If the cat dies, de-occupy the hazard and destroy the cat prefab.
                 Debug.Log("A cat has fallen.");
-                hazard.occupied = false;
-                hazard.trapped = false;
+                goalHazard.occupied = false;
+                goalHazard.trapped = false;
                 Destroy(this.gameObject);
                 HUDscript.lives -= 1;
+                HUDscript.freeMeter = 0;
                 break;
         }
+    }
+    
+    private Hazard GetFreeHazard() {
+        //Counter to prevent deadlock
+        var iter = 0;
+        var hazardBag = new List<Hazard>(hazards);
+        foreach(var haz in hazardBag)
+            Debug.Log(haz);
+        while (iter < hazards.Count) {
+            //Grab a random hazard from the bag
+            var checkedHazard = hazardBag[Random.Range(0, hazards.Count)];
+            hazardBag.Remove(checkedHazard);
+            //Return if if it's free
+            if (!checkedHazard.occupied)
+                return checkedHazard;
+            iter++;
+        }
+        Debug.LogWarning("Tried to find an open trap... but couldn't.");
+        return null;
     }
 
     //Roaming Script.
@@ -108,28 +131,26 @@ public class CatAI : MonoBehaviour
     {
         while (currentState == CatState.ROAMING)
         {
-
             //Pick a random number between the cat's current curiosity level and 100.
             //If the number is above the threshold, the cat enters its curious state.
             //Ensures that, eventually, the cat's curiosity will overwhelm it.
-            if (Random.Range(curiosity, 100) >= 95)
-            {
-                //Checks if the hazard is occupied.  If it is, it keeps roaming.
-                if (hazard.occupied == true)
-                {
-                    chooseRandomTarget();
+            if (Random.Range(curiosity, CURIOSITY_MAX) >= INTEREST_TRIGGER) {
+                goalHazard = GetFreeHazard();
+                if (goalHazard == null) {
+                    //Could not find a free hazard
+                    yield return null;
                 }
-                else
-                {
-                    hazard.occupied = true;
+                else {
+                    //no longer roaming
                     setState(CatState.CURIOUS);
+                    yield return null;
                 }
             }
             //Otherwise, the cat's curiosity grows.
             else
             {
                 chooseRandomTarget();
-                curiosity = Mathf.Clamp(curiosity + 10, 0, 100);
+                curiosity = Mathf.Clamp(curiosity + 10, CURIOSITY_MIN, CURIOSITY_MAX);
             }
 
             //Kind of like a sleep() function for the loop.  Very necessary.
@@ -156,11 +177,9 @@ public class CatAI : MonoBehaviour
         Debug.Log("I have chosen death. Curiosity: " + curiosity);
 
         //Targets a random hazard to go "investigate."
-        var target = goalPositions[Random.Range(0, goalPositions.Count - 1)];
+        agent.destination = goalHazard.transform.position;
 
-        agent.destination = target.position;
-
-        while (Vector3.Distance(transform.position, target.position) > agent.stoppingDistance)
+        while (Vector3.Distance(transform.position, goalHazard.transform.position) > agent.stoppingDistance)
         {
             //Waits for the cat to get to where its going.
             //Was necessary when the cat's state changed to distress inside here, and now
@@ -199,7 +218,8 @@ public class CatAI : MonoBehaviour
     {
         Debug.Log("Rescued!");
         StopAllCoroutines();
-        hazard.occupied = false;
+        goalHazard.occupied = false;
+        goalHazard = null;
         catSpawner.spawnCat();
         Destroy(this.gameObject);
     }
