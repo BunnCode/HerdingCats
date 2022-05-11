@@ -21,7 +21,7 @@ public class HUDscript : MonoBehaviour
     {
         freeMeterText.alpha = 0.0F;
         Time.timeScale = 1;
-        lives = 1;
+        lives = 3;
         freeMeter = 0;
         SetLivesText();
         SetFreeMeterText();
