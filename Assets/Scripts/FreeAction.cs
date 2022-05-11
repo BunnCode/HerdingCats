@@ -10,6 +10,7 @@ public class FreeAction : MonoBehaviour
     private int score;
     public GameObject canFreeText;
 
+    bool freeTime = false;
     public Hazard hazard;
 
     void Start()
@@ -18,6 +19,19 @@ public class FreeAction : MonoBehaviour
         canFreeText.SetActive(false);
 
         SetScoreText();
+    }
+
+    private void Update()
+    {
+        if(freeTime == true)
+        {
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                hazard.freeCat();
+                score += 9;
+                SetScoreText();
+            }
+        }
     }
 
     // While player is near Hazard, they can perform actions and text appears on screen
@@ -29,22 +43,13 @@ public class FreeAction : MonoBehaviour
             if (hazard.trapped == true)
             {
                 canFreeText.SetActive(true);
-                if (Input.GetKeyDown(KeyCode.F))
-                {
-                    hazard.freeCat();
-                    score += 9;
-                    SetScoreText();
-                }
+                freeTime = true;
             }
-        }
-    }
-
-    // Upon leaving Hazard area, text will disappear
-    void OnTriggerExit(Collider other)
-    {
-        if (other.gameObject == player)
-        {
-            canFreeText.SetActive(false);
+            else
+            {
+                canFreeText.SetActive(false);
+                freeTime = false;
+            }
         }
     }
 
