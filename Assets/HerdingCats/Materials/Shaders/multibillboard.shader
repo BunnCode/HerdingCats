@@ -66,6 +66,9 @@
 
 			void vert(inout appdata_full v, out Input o)
 			{
+				//https://forum.unity.com/threads/cylindrical-billboard-shader-shader-for-billboard-with-rotation-restricted-to-the-y-axis.498406/
+				//used for reference for a part of the initial part of this billboard shader due to weirdness with the standard
+				//shader legacy pipeline
 				UNITY_INITIALIZE_OUTPUT(Input, o);
 
 				// apply object scale
